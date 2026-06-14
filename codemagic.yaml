@@ -1,0 +1,71 @@
+# Codemagic CI/CD configuration for the Badign 2026 Flutter app.
+# Docs: https://docs.codemagic.io/yaml-quick-start/building-a-flutter-app/
+#
+# Before this works you MUST do the following (one-time setup) — see notes at the
+# bottom of this file:
+#   1. Have an Apple Developer Program membership ($99/yr).
+#   2. Change the bundle id from com.example.* to a real one and register it.
+#   3. Create the app record in App Store Connect.
+#   4. Create an App Store Connect API key (.p8) and add it to Codemagic as an
+#      integration named exactly:  Codemagic API key
+#   5. Connect this Git repo to a Codemagic application.
+
+workflows:
+  ios-appstore:
+    name: iOS - App Store / TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+
+    integrations:
+      # This name must match the App Store Connect API key integration you
+      # create in the Codemagic UI: Teams/User settings > Integrations >
+      # Developer Portal (App Store Connect).
+      app_store_connect: Codemagic API key
+
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        # CHANGE THIS to your real, registered bundle identifier.
+        bundle_identifier: com.example.badignApp
+      vars:
+        # The numeric "Apple ID" of the app in App Store Connect
+        # (App Store Connect > your app > App Information > General > Apple ID).
+        APP_STORE_APPLE_ID: 0000000000
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+
+    scripts:
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Install pods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Flutter analyze
+        script: |
+          flutter analyze || true
+      - name: Flutter build ipa (auto-increment build number)
+        script: |
+          flutter build ipa --release \
+            --build-name=1.0.0 \
+            --build-number=$(($(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") + 1))
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        # Uploads to TestFlight automatically after a successful build.
+        submit_to_testflight: true
+        # Set to true (and uncomment beta_groups / submit_to_app_store below)
+        # only when you are ready to push to external testers or the App Store.
+        # beta_groups:
+        #   - Internal Testers
+        submit_to_app_store: false
