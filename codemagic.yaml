@@ -35,6 +35,14 @@ workflows:
       cocoapods: default
 
     scripts:
+      - name: Create / fetch code signing files (registers App ID + profile)
+        script: |
+          # --create registers the bundle id identifier AND the App Store
+          # provisioning profile if they don't exist yet. Requires the App Store
+          # Connect API key to have "App Manager" or "Admin" access.
+          app-store-connect fetch-signing-files "com.itech.badignapp" \
+            --type IOS_APP_STORE \
+            --create
       - name: Set up code signing settings on Xcode project
         script: |
           xcode-project use-profiles
