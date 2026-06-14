@@ -25,8 +25,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        # CHANGE THIS to your real, registered bundle identifier.
-        bundle_identifier: com.example.badignApp
+        bundle_identifier: com.itech.badignapp
       vars:
         # The numeric "Apple ID" of the app in App Store Connect
         # (App Store Connect > your app > App Information > General > Apple ID).
@@ -50,9 +49,13 @@ workflows:
           flutter analyze || true
       - name: Flutter build ipa (auto-increment build number)
         script: |
+          # Look up the latest build number; fall back to 0 if the app record
+          # does not exist in App Store Connect yet (first build / APP_STORE_APPLE_ID still 0).
+          LATEST=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          if [ -z "$LATEST" ]; then LATEST=0; fi
           flutter build ipa --release \
             --build-name=1.0.0 \
-            --build-number=$(($(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID") + 1))
+            --build-number=$((LATEST + 1))
 
     artifacts:
       - build/ios/ipa/*.ipa
