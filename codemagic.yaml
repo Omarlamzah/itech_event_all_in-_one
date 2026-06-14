@@ -31,7 +31,7 @@ workflows:
         BUNDLE_ID: "com.itech.badignapp"
         # Numeric "Apple ID" of the app in App Store Connect
         # (App Store Connect > your app > App Information > General > Apple ID).
-        APP_STORE_APPLE_ID: 0000000000
+        APP_STORE_APPLE_ID: 6780184486
       flutter: stable
       xcode: latest
       cocoapods: default
