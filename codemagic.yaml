@@ -1,18 +1,21 @@
 # Codemagic CI/CD configuration for the Badign 2026 Flutter app.
 # Docs: https://docs.codemagic.io/yaml-quick-start/building-a-flutter-app/
 #
-# Before this works you MUST do the following (one-time setup) — see notes at the
-# bottom of this file:
-#   1. Have an Apple Developer Program membership ($99/yr).
-#   2. Change the bundle id from com.example.* to a real one and register it.
-#   3. Create the app record in App Store Connect.
-#   4. Create an App Store Connect API key (.p8) and add it to Codemagic as an
-#      integration named exactly:  Codemagic API key
-#   5. Connect this Git repo to a Codemagic application.
+# Code signing uses MANUAL creation of the distribution certificate + provisioning
+# profile from a private key (CERTIFICATE_PRIVATE_KEY) — the same proven setup used
+# for the les_theme app. This avoids the "No matching profiles found" error.
+#
+# One-time setup required in the Codemagic UI:
+#   1. App Store Connect integration named exactly: codemagic
+#   2. A SECURE environment variable named CERTIFICATE_PRIVATE_KEY, in group
+#      "appstore_credentials", whose value is the full contents of:
+#      .../my files/cert_key.pem  (BEGIN/END lines included).
+#   3. (For TestFlight upload) an app record in App Store Connect with bundle id
+#      com.itech.badignapp, and its numeric Apple ID placed in APP_STORE_APPLE_ID.
 
 workflows:
   ios-appstore:
-    name: iOS - App Store / TestFlight
+    name: iOS App Store Build
     instance_type: mac_mini_m2
     max_build_duration: 120
 
@@ -21,11 +24,12 @@ workflows:
       app_store_connect: codemagic
 
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.itech.badignapp
+      groups:
+        # Provides the secure CERTIFICATE_PRIVATE_KEY variable (set in Codemagic UI).
+        - appstore_credentials
       vars:
-        # The numeric "Apple ID" of the app in App Store Connect
+        BUNDLE_ID: "com.itech.badignapp"
+        # Numeric "Apple ID" of the app in App Store Connect
         # (App Store Connect > your app > App Information > General > Apple ID).
         APP_STORE_APPLE_ID: 0000000000
       flutter: stable
@@ -33,16 +37,16 @@ workflows:
       cocoapods: default
 
     scripts:
-      - name: Create / fetch code signing files (registers App ID + profile)
+      - name: Set up code signing (create cert + profile)
         script: |
-          # --create registers the bundle id identifier AND the App Store
-          # provisioning profile if they don't exist yet. Requires the App Store
-          # Connect API key to have "App Manager" or "Admin" access.
-          app-store-connect fetch-signing-files "com.itech.badignapp" \
+          keychain initialize
+          # Creates/fetches the iOS Distribution certificate from the provided
+          # private key, and creates the App Store provisioning profile + App ID.
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
+            --certificate-key @env:CERTIFICATE_PRIVATE_KEY \
             --create
-      - name: Set up code signing settings on Xcode project
-        script: |
+          keychain add-certificates
           xcode-project use-profiles
       - name: Get Flutter packages
         script: |
@@ -50,9 +54,6 @@ workflows:
       - name: Install pods
         script: |
           find . -name "Podfile" -execdir pod install \;
-      - name: Flutter analyze
-        script: |
-          flutter analyze || true
       - name: Flutter build ipa (auto-increment build number)
         script: |
           # Look up the latest build number; fall back to 0 if the app record
@@ -73,8 +74,4 @@ workflows:
         auth: integration
         # Uploads to TestFlight automatically after a successful build.
         submit_to_testflight: true
-        # Set to true (and uncomment beta_groups / submit_to_app_store below)
-        # only when you are ready to push to external testers or the App Store.
-        # beta_groups:
-        #   - Internal Testers
         submit_to_app_store: false
