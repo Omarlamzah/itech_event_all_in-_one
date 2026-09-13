@@ -67,8 +67,8 @@ workflows:
           [ $((TESTFLIGHT + 1)) -gt "$NEXT" ] && NEXT=$((TESTFLIGHT + 1))
           [ "$BUILD_NUMBER" -gt "$NEXT" ] 2>/dev/null && NEXT="$BUILD_NUMBER"
           echo "Using build number: $NEXT"
+          # Read the release version from pubspec.yaml; override only the build number.
           flutter build ipa --release \
-            --build-name=1.0.0 \
             --build-number="$NEXT"
 
     artifacts:
