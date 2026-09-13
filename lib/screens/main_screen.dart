@@ -30,7 +30,7 @@ class _MainScreenState extends State<MainScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Badign 2026'),
+        title: const Text('Outils iTechEvent Staff'),
         actions: [
           PopupMenuButton(
             child: Padding(
@@ -46,7 +46,10 @@ class _MainScreenState extends State<MainScreen> {
             itemBuilder: (_) => <PopupMenuEntry>[
               PopupMenuItem(
                 enabled: false,
-                child: Text(user?.email ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                child: Text(
+                  user?.email ?? '',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ),
               const PopupMenuDivider(),
               const PopupMenuItem(value: 'logout', child: Text('Logout')),
@@ -59,34 +62,47 @@ class _MainScreenState extends State<MainScreen> {
                     title: const Text('Logout'),
                     content: const Text('Are you sure you want to logout?'),
                     actions: [
-                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Logout')),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Logout'),
+                      ),
                     ],
                   ),
                 );
                 if (confirmed == true && context.mounted) {
                   await context.read<AuthProvider>().logout();
+                  if (context.mounted) {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  }
                 }
               }
             },
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          _screens[_currentIndex],
-          const AiChatWidget(),
-        ],
-      ),
+      body: Stack(children: [_screens[_currentIndex], const AiChatWidget()]),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
         type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: 'Dashboard',
+          ),
           BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Événements'),
-          BottomNavigationBarItem(icon: Icon(Icons.inventory_2), label: 'Matériaux'),
-          BottomNavigationBarItem(icon: Icon(Icons.storefront), label: 'Fournisseurs'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inventory_2),
+            label: 'Matériaux',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.storefront),
+            label: 'Fournisseurs',
+          ),
         ],
       ),
     );

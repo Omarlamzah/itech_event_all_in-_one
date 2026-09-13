@@ -36,7 +36,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() => _loading = false);
 
-    if (!success && auth.error != null) {
+    if (success) {
+      Navigator.maybePop(context);
+    } else if (auth.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(auth.error!), backgroundColor: Colors.red),
       );
@@ -53,27 +55,35 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo / Title
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  width: 92,
+                  height: 92,
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x25106359),
+                        blurRadius: 28,
+                        offset: Offset(0, 14),
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.badge, size: 48, color: Colors.white),
+                  child: Image.asset('assets/icon/app_icon.png'),
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Badign 2026',
+                  'Bienvenue sur iTechEvent',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
-                  'Event Management',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                  'Médecin, participant ou équipe événementielle',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 40),
                 // Form
@@ -85,26 +95,36 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         decoration: const InputDecoration(
-                          labelText: 'Email',
+                          labelText: 'Adresse email',
                           prefixIcon: Icon(Icons.email_outlined),
                           border: OutlineInputBorder(),
                         ),
-                        validator: (v) => v == null || !v.contains('@') ? 'Enter a valid email' : null,
+                        validator: (v) => v == null || !v.contains('@')
+                            ? 'Saisissez un email valide'
+                            : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          labelText: 'Password',
+                          labelText: 'Mot de passe',
                           prefixIcon: const Icon(Icons.lock_outline),
                           border: const OutlineInputBorder(),
                           suffixIcon: IconButton(
-                            icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                            onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
                           ),
                         ),
-                        validator: (v) => v == null || v.isEmpty ? 'Enter your password' : null,
+                        validator: (v) => v == null || v.isEmpty
+                            ? 'Saisissez votre mot de passe'
+                            : null,
                       ),
                       const SizedBox(height: 24),
                       SizedBox(
@@ -113,16 +133,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: ElevatedButton(
                           onPressed: _loading ? null : _submit,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
                             foregroundColor: Colors.white,
                           ),
                           child: _loading
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
                                 )
-                              : const Text('Login', style: TextStyle(fontSize: 16)),
+                              : const Text(
+                                  'Se connecter',
+                                  style: TextStyle(fontSize: 16),
+                                ),
                         ),
                       ),
                     ],

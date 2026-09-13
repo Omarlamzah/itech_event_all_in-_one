@@ -1,10 +1,10 @@
 name: badign_app
-description: Event management mobile app for Badign 2026
+description: iTechEvent central application for doctors, participants and event staff.
 publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ^3.11.4
 
 dependencies:
   flutter:
@@ -21,6 +21,14 @@ dependencies:
   intl: ^0.19.0
   # Icons
   cupertino_icons: ^1.0.8
+  http: ^1.6.0
+  flutter_animate: ^4.5.2
+  url_launcher: ^6.3.2
+  liquid_glass_widgets: ^1.2.3
+  youtube_player_iframe: ^6.0.2
+  add_2_calendar: 3.0.1
+  pdfrx: ^2.4.7
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
@@ -30,6 +38,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icon/
+    - assets/home/
+    - assets/branding/
 
 flutter_launcher_icons:
   android: true

@@ -21,7 +21,9 @@ class AuthProvider extends ChangeNotifier {
     try {
       await ApiService().init();
       _user = await _authService.getCurrentUser();
-      _status = _user != null ? AuthStatus.authenticated : AuthStatus.unauthenticated;
+      _status = _user != null
+          ? AuthStatus.authenticated
+          : AuthStatus.unauthenticated;
     } catch (_) {
       _status = AuthStatus.unauthenticated;
     }
@@ -32,6 +34,37 @@ class AuthProvider extends ChangeNotifier {
     _error = null;
     try {
       final result = await _authService.login(email, password);
+      _user = result['user'] as User;
+      _status = AuthStatus.authenticated;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = ApiService().extractErrorMessage(e);
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> register({
+    required String name,
+    required String email,
+    required String password,
+    String? specialty,
+    String? phone,
+    String? city,
+    String? institution,
+  }) async {
+    _error = null;
+    try {
+      final result = await _authService.register(
+        name: name,
+        email: email,
+        password: password,
+        specialty: specialty,
+        phone: phone,
+        city: city,
+        institution: institution,
+      );
       _user = result['user'] as User;
       _status = AuthStatus.authenticated;
       notifyListeners();

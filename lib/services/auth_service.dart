@@ -6,21 +6,55 @@ class AuthService {
   final ApiService _api = ApiService();
 
   Future<Map<String, dynamic>> login(String email, String password) async {
-    final response = await _api.post('/login', data: {
-      'email': email,
-      'password': password,
-    });
+    final response = await _api.post(
+      '/login',
+      data: {'email': email, 'password': password},
+    );
 
     final token = response.data['token'] as String;
     final user = User.fromJson(response.data['user']);
 
+    await _saveSession(token, user);
+
+    return {'token': token, 'user': user};
+  }
+
+  Future<Map<String, dynamic>> register({
+    required String name,
+    required String email,
+    required String password,
+    String? specialty,
+    String? phone,
+    String? city,
+    String? institution,
+  }) async {
+    final response = await _api.post(
+      '/register',
+      data: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'password_confirmation': password,
+        'specialty': specialty,
+        'phone': phone,
+        'city': city,
+        'institution': institution,
+      },
+    );
+
+    final token = response.data['token'] as String;
+    final user = User.fromJson(response.data['user']);
+    await _saveSession(token, user);
+    return {'token': token, 'user': user};
+  }
+
+  Future<void> _saveSession(String token, User user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_token', token);
     await prefs.setString('user_name', user.name);
     await prefs.setString('user_email', user.email);
+    await prefs.setString('user_role', user.role);
     await prefs.setBool('user_is_admin', user.isAdmin);
-
-    return {'token': token, 'user': user};
   }
 
   Future<void> logout() async {
@@ -33,6 +67,7 @@ class AuthService {
     await prefs.remove('auth_token');
     await prefs.remove('user_name');
     await prefs.remove('user_email');
+    await prefs.remove('user_role');
     await prefs.remove('user_is_admin');
   }
 
