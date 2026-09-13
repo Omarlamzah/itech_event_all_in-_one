@@ -36,6 +36,11 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   flutter_launcher_icons: ^0.13.1
 
+# Compatibility fix for newer Dart SDKs used by Codemagic.
+dependency_overrides:
+  pdfrx_engine:
+    path: third_party/pdfrx_engine
+
 flutter:
   uses-material-design: true
   assets:
